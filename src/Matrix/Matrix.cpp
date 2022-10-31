@@ -33,41 +33,23 @@ void Matrix::readFromFile(std::string filename){
     }
     
     file.close();
+}
 
-    // wypisywanie wyniku
+void Matrix::showGraph(){
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
             std::cout << matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }
+}
 
-    std::cout << std::endl;
+void Matrix::removeColumnRow(int rowIndex, int columnIndex){
+    matrix.erase( std::next( std::begin( matrix ), rowIndex ) );
 
-    // USUWANIE WIERSZA
-    matrix.erase( std::next( std::begin( matrix ), 1 ) );
-
-    // wypisywanie wyniku
-    for(int i = 0; i < (s-1); i++){
-        for(int j = 0; j < s; j++){
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    // USUWANIE KOLUMNY
-    int columnIndex = 1;
     std::for_each(matrix.begin(), matrix.end(), [&](std::vector<int>& row) {
         row.erase(std::next(row.begin(), columnIndex));
     });
 
-    std::cout << std::endl;
-
-    // wypisywanie wyniku
-    for(int i = 0; i < (s-1); i++){
-        for(int j = 0; j < (s-1); j++){
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    s--;
 }

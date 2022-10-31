@@ -13,6 +13,8 @@ class Matrix{
     public:
     Matrix(int);
     void readFromFile(std::string);
+    void showGraph();
+    void removeColumnRow(int, int);
 };
 
 #endif
