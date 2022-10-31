@@ -19,26 +19,33 @@ void Matrix::readFromFile(std::string filename){
         std::cout << "The file could not be opened! " << std::endl;
     }
     else{
-        int value;
+        int val;
 
         file >> s;
-        matrix = decltype(matrix)(s, std::vector<int>(s));
+        matrix = decltype(matrix)(s, std::vector<Edge>(s));
 
         for(int i = 0; i < s; i++){
             for(int j = 0; j < s; j++){
-                file >> value;
-                matrix[i][j] = value;
+                file >> val;
+                matrix[i][j].value = val;
+                matrix[i][j].row_number = i;
+                matrix[i][j].col_number = j;
             }
         }
     }
     
     file.close();
+
+    Matrix::showGraph();
+    Matrix::removeColumnRow(2,2);
+    std::cout << std::endl;
+    Matrix::showGraph();
 }
 
 void Matrix::showGraph(){
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
-            std::cout << matrix[i][j] << " ";
+            std::cout << matrix[i][j].value << " ";
         }
         std::cout << std::endl;
     }
@@ -47,7 +54,7 @@ void Matrix::showGraph(){
 void Matrix::removeColumnRow(int rowIndex, int columnIndex){
     matrix.erase( std::next( std::begin( matrix ), rowIndex ) );
 
-    std::for_each(matrix.begin(), matrix.end(), [&](std::vector<int>& row) {
+    std::for_each(matrix.begin(), matrix.end(), [&](std::vector<Edge>& row) {
         row.erase(std::next(row.begin(), columnIndex));
     });
 
