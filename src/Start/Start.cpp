@@ -1,4 +1,5 @@
 #include <Start.hpp>
+#include <Matrix.hpp>
 #include <iostream>
 
 void Start::welcomeMessage(){
@@ -19,6 +20,8 @@ void Start::welcomeMessage(){
 
 void Start::chooseAlgorithm(int user_inp){
 
+    Matrix matrix(3);
+
     switch(user_inp){
         case 1:
         {
@@ -36,6 +39,14 @@ void Start::chooseAlgorithm(int user_inp){
             std::cout << "2. Generate random matrix" << std::endl;
             std::cout << "Input: ";
             std::cin >> user_inp;
+
+            if(user_inp == 1){
+                std::string filename;
+                std::cout << "Type file name: ";
+                std::cin >> filename;
+                matrix.readFromFile(filename);
+            }
+
             break;
         }
         case 3:

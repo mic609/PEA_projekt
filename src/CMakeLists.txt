@@ -3,6 +3,7 @@ set(MODULE_NAME bin)
 message("compile ${MODULE_NAME} For run type ./src/bin")
 
 add_subdirectory(Start)
+add_subdirectory(Matrix)
 
 add_executable(
   ${MODULE_NAME} 

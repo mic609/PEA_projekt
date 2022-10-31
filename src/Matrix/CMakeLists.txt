@@ -1,13 +1,13 @@
-set(MODULE_NAME start)
+set(MODULE_NAME matrix)
 
 message("compile ${MODULE_NAME}")
 
 set(INTERNAL_FILES
-  Start.cpp
+  Matrix.cpp
 )
 
 set(PUBLIC_HEADERS
-  Start.hpp
+  Matrix.hpp
 )
 
 add_library(
@@ -28,7 +28,6 @@ target_include_directories(
 target_link_libraries(
   ${MODULE_NAME}
   PRIVATE
-    lib::matrix
 )
 
 add_library(lib::${MODULE_NAME} ALIAS ${MODULE_NAME})
