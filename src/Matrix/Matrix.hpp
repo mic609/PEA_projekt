@@ -6,20 +6,23 @@
 
 class Matrix{
 
-    private:
+    public:
     struct Edge{
         int value;
         int row_number;
         int col_number;
     };
-    int s; // liczba wierszy/kolumn
     std::vector<std::vector<Edge>> matrix; //graf
+    
+    private:
+    int s; // liczba wierszy/kolumn
 
     public:
     Matrix(int);
     void readFromFile(std::string);
     void showGraph();
     void removeColumnRow(int, int);
+    int size();
 };
 
 #endif

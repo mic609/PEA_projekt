@@ -4,6 +4,7 @@ message("compile ${MODULE_NAME} For run type ./src/bin")
 
 add_subdirectory(Start)
 add_subdirectory(Matrix)
+add_subdirectory(BranchAndBound)
 
 add_executable(
   ${MODULE_NAME} 

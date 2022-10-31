@@ -13,7 +13,7 @@ void Matrix::readFromFile(std::string filename){
     // wczytywanie z pliku
     std::fstream file;
 
-    file.open("../../PEA_projekt/tests/" + filename, std::ios::in);
+    file.open("D:/STUDIA/Semestr_V/PEA/projekt/program/PEA_projekt/tests/" + filename, std::ios::in);
 
     if(file.good() == false){
         std::cout << "The file could not be opened! " << std::endl;
@@ -35,11 +35,6 @@ void Matrix::readFromFile(std::string filename){
     }
     
     file.close();
-
-    Matrix::showGraph();
-    Matrix::removeColumnRow(2,2);
-    std::cout << std::endl;
-    Matrix::showGraph();
 }
 
 void Matrix::showGraph(){
@@ -59,4 +54,8 @@ void Matrix::removeColumnRow(int rowIndex, int columnIndex){
     });
 
     s--;
+}
+
+int Matrix::size(){
+    return s;
 }

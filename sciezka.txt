@@ -1,0 +1,2 @@
+"D:/STUDIA/Semestr_V/PEA/projekt/program/PEA_projekt/tests/"
+"../../PEA_projekt/tests/"

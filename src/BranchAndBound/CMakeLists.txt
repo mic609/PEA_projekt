@@ -1,13 +1,13 @@
-set(MODULE_NAME start)
+set(MODULE_NAME branchandbound)
 
 message("compile ${MODULE_NAME}")
 
 set(INTERNAL_FILES
-  Start.cpp
+  BranchAndBound.cpp
 )
 
 set(PUBLIC_HEADERS
-  Start.hpp
+  BranchAndBound.hpp
 )
 
 add_library(
@@ -29,7 +29,6 @@ target_link_libraries(
   ${MODULE_NAME}
   PRIVATE
     lib::matrix
-    lib::branchandbound
 )
 
 add_library(lib::${MODULE_NAME} ALIAS ${MODULE_NAME})
