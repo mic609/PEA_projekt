@@ -51,8 +51,11 @@ void Start::chooseAlgorithm(int user_inp){
     switch(user_inp){
         case 1:
         {
+            BranchAndBound alg(0);
             // uruchamiamy algorytm
-            BranchAndBound::algorithm(matrix);
+            alg.algorithm(matrix);
+            std::cout<<std::endl<<std::endl;
+            matrix.showGraph();
             break;
         }
     }

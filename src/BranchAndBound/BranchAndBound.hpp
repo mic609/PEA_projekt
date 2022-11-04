@@ -4,9 +4,18 @@
 #include <Matrix.hpp>
 
 class BranchAndBound{
+
+    private:
+    int lower_bound;
+    int result;
+
     public:
-    static int reduceRowColumn(Matrix); // zwraca wartość redukcji
-    static void algorithm(Matrix);
+    BranchAndBound(int);
+    static int reduceRowColumn(Matrix&); // zwraca wartość redukcji
+    static int bottomLimit(Matrix, int, int);
+    void algorithm(Matrix);
+    void execution(Matrix&, bool = false);
+    void showResult();
 };
 
 #endif
