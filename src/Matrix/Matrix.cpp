@@ -47,13 +47,13 @@ void Matrix::showGraph(){
 }
 
 void Matrix::removeColumnRow(int rowIndex, int columnIndex){
-    matrix.erase( std::next( std::begin( matrix ), rowIndex ) );
 
-    std::for_each(matrix.begin(), matrix.end(), [&](std::vector<Edge>& row) {
-        row.erase(std::next(row.begin(), columnIndex));
-    });
+    for(int i = 0; i < s; i++)
+        matrix[rowIndex][i].value = -1;
 
-    s--;
+    for(int i = 0; i < s; i++){
+        matrix[i][columnIndex].value = -1;
+    }
 }
 
 int Matrix::size(){

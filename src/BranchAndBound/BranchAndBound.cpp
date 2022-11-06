@@ -2,10 +2,8 @@
 #include <Matrix.hpp>
 #include <algorithm>
 #include <list>
-
-BranchAndBound::BranchAndBound(int r){
-    result = r;
-}
+#include <iterator>
+#include <limits>
 
 // funkcja zwraca tzn. lower bound, czyli dolne ograniczenie dla problemu komiwojażera
 // funkcja dodatkowo redukuje kolumny i wiersze macierzy
@@ -84,14 +82,25 @@ int BranchAndBound::bottomLimit(Matrix m, int i, int j){
 
 void BranchAndBound::algorithm(Matrix matrix){
     lower_bound = BranchAndBound::reduceRowColumn(matrix);
-    result = lower_bound;
+    int result = lower_bound;
+    std::list<Edge> edges;
+    final_result = INT_MAX;
 
-    BranchAndBound alg(result);
-    alg.execution(matrix, true);
-    alg.showResult();
+    BranchAndBound alg;
+    result = alg.executionLeft(matrix, result, edges, true);
+    std::cout << "result: " << result << std::endl;
+
+    std::cout << "FINALLY: " << std::endl;
+    for (auto v : alg.returnEdges()){
+        std::cout << v.od_w;
+        std::cout << " " << v.do_w << "\n";
+    }
 }
 
-void BranchAndBound::execution(Matrix& matrix, bool start_exec){
+int BranchAndBound::executionLeft(Matrix& matrix, int result, std::list<Edge> edges, bool start_exec){
+
+    std::cout << "Left Wing: ";
+    std::cout<< result << std::endl;
 
     int local_lower_bound = 0;
     if(start_exec == false)
@@ -99,14 +108,11 @@ void BranchAndBound::execution(Matrix& matrix, bool start_exec){
     else
         start_exec = false;
 
-    matrix.showGraph();
-    std::cout << std::endl;
-    std::cout <<"local lower bound: " << local_lower_bound <<std::endl;
-
     result += local_lower_bound;
+    if(result >= final_result)
+        return result;
 
     int bottom_limit = 0;
-    int i_del, j_del;
     int i_red, j_red;
 
     for(int i = 0; i < matrix.size(); i++){
@@ -119,8 +125,6 @@ void BranchAndBound::execution(Matrix& matrix, bool start_exec){
                     bottom_limit = previous_bottom_limit;
                 }
                 else{
-                    i_del = matrix.matrix[i][j].row_number;
-                    j_del = matrix.matrix[i][j].col_number;
                     i_red = i;
                     j_red = j;
                 }
@@ -128,17 +132,228 @@ void BranchAndBound::execution(Matrix& matrix, bool start_exec){
         }
     }
 
-    if(j_del < matrix.size() && i_del < matrix.size())
-        matrix.matrix[j_del][i_del].value = -1;
-    matrix.removeColumnRow(i_red, j_red);
+    int resultSec = result + bottom_limit;
 
-    std::cout << "i_red = " << i_red << std::endl;
-    std::cout << "j_red = " << j_red << std::endl;
+    if(bottom_limit != 0){
 
-    if(bottom_limit != 0)
-        BranchAndBound::execution(matrix);
+        Edge elem;
+        elem.od_w = i_red;
+        elem.do_w = j_red;
+        edges.push_back(elem);
+
+        for (auto v : edges){
+            std::cout << v.od_w;
+            std::cout << " " << v.do_w << "\n";
+        }
+
+        Matrix help_matrix(4);
+        help_matrix = matrix;
+
+        if(result < resultSec){
+            if(j_red < matrix.size() && i_red < matrix.size())
+                matrix.matrix[j_red][i_red].value = -1;
+            matrix.removeColumnRow(i_red, j_red);
+
+            result = BranchAndBound::executionLeft(matrix, result, edges);
+        }
+        if(result >= resultSec){
+            help_matrix.matrix[i_red][j_red].value = -1;
+            if(!edges.empty())
+                edges.pop_front();
+            resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i_red, j_red, edges);
+        }
+    }
+    else{
+        int j_temp = -1;
+        int i_temp = -1;
+        for(int i = 0; i < matrix.size(); i++){
+            for(int j = 0; j < matrix.size(); j++){
+                if(matrix.matrix[i][j].value == 0 && j != j_temp && i != i_temp){
+                    Edge elem;
+                    elem.od_w = i;
+                    elem.do_w = j;
+                    i_temp = i;
+                    j_temp = j;
+                    edges.push_front(elem);
+                }
+            }
+        }
+        while(edges.size() > matrix.size())
+            edges.pop_front();
         
+        if(!finalEdges.empty())
+            finalEdges.clear();
+
+        std::copy( edges.begin(), edges.end(), std::back_inserter(finalEdges) );
+
+        final_result = result;
+
+        std::cout << "FINALLY: " << std::endl;
+        for (auto v : finalEdges){
+            std::cout << v.od_w;
+            std::cout << " " << v.do_w << "\n";
+        }
+    }
+
+    if(result > resultSec)
+        return resultSec;
+    else
+        return result;
 }
-void BranchAndBound::showResult(){
-    std::cout << "result: " << result;
+int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r, std::list<Edge> edges, bool start_exec){
+
+    std::cout << "Right Wing: ";
+    std::cout<< result << std::endl;
+
+    std::list<int> help_list;
+    int min_col = 0;
+    int min_row = 0;
+    int min = 0;
+
+    for(int i = 0; i < matrix.size(); i++){
+        if(matrix.matrix[i][j_r].value >= 0)
+            help_list.push_back(matrix.matrix[i][j_r].value);
+    }
+    min_col = *std::min_element(help_list.begin(), help_list.end());
+
+    for(int i = 0; i < matrix.size(); i++)
+        if (matrix.matrix[i][j_r].value > 0)
+            matrix.matrix[i][j_r].value -= min_col;
+
+    help_list.clear();
+
+    for(int j = 0; j < matrix.size(); j++){
+        if(matrix.matrix[i_r][j].value >= 0)
+            help_list.push_back(matrix.matrix[i_r][j].value);
+    }
+    min_row = *std::min_element(help_list.begin(), help_list.end());
+
+    for(int j = 0; j < matrix.size(); j++)
+        if (matrix.matrix[i_r][j].value > 0)
+            matrix.matrix[i_r][j].value -= min_row;
+
+    help_list.clear();
+
+    min = min_col + min_row;
+    result += min;
+    if(result >= final_result)
+        return result;
+
+    int bottom_limit = 0;
+    int i_red, j_red;
+
+    for(int i = 0; i < matrix.size(); i++){
+        for(int j = 0; j < matrix.size(); j++){
+            if(matrix.matrix[i][j].value == 0){
+                int previous_bottom_limit = bottom_limit;
+
+                bottom_limit = BranchAndBound::bottomLimit(matrix, i, j);
+                if(previous_bottom_limit > bottom_limit){
+                    bottom_limit = previous_bottom_limit;
+                }
+                else{
+                    i_red = i;
+                    j_red = j;
+                }
+            }
+        }
+    }
+
+    int resultSec = result + bottom_limit;
+
+    if(bottom_limit != 0){
+
+        Edge elem;
+        elem.od_w = i_red;
+        elem.do_w = j_red;
+        edges.push_back(elem);
+
+        Matrix help_matrix(4);
+        help_matrix = matrix;
+
+        for (auto v : edges){
+            std::cout << v.od_w;
+            std::cout << " " << v.do_w << "\n";
+        }
+
+        if(result < resultSec){
+            //std::cout << "left wing: " << std::endl;
+            //matrix.showGraph();
+            if(j_red < matrix.size() && i_red < matrix.size())
+                matrix.matrix[j_red][i_red].value = -1;
+            matrix.removeColumnRow(i_red, j_red);
+            result = BranchAndBound::executionLeft(matrix, result, edges);
+        }
+        if(result >= resultSec){
+            //std::cout << "right wing: " << std::endl;
+            //help_matrix.showGraph();
+            help_matrix.matrix[i_red][j_red].value = -1;
+            if(!edges.empty())
+                edges.pop_front();
+            resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i_red, j_red, edges);
+        }
+    }
+    else{
+        int j_temp = -1;
+        int i_temp = -1;
+        for(int i = 0; i < matrix.size(); i++){
+            for(int j = 0; j < matrix.size(); j++){
+                if(matrix.matrix[i][j].value == 0 && j != j_temp && i != i_temp){
+                    Edge elem;
+                    elem.od_w = i;
+                    elem.do_w = j;
+                    i_temp = -1;
+                    j_temp = j;
+                    edges.push_front(elem);
+                }
+            }
+        }
+        while(edges.size() > matrix.size())
+            edges.pop_front();
+
+        if(!finalEdges.empty())
+            finalEdges.clear();
+
+        std::copy( edges.begin(), edges.end(), std::back_inserter(finalEdges) );
+
+        final_result = result;
+    }
+
+    if(result > resultSec)
+        return resultSec;
+    else
+        return result;
+
 }
+
+void BranchAndBound::bruteForce(Matrix matrix){
+    int *tab = new int[matrix.size()];
+    int result = -1;
+    for(int i = 0; i < matrix.size(); i++)
+        tab[i] = i;
+    
+    do {
+        int local_result;
+
+        for(int i = 0; i < matrix.size(); i++){
+            if(i == matrix.size() - 1)
+                local_result += matrix.matrix[tab[matrix.size() - 1]][tab[0]].value;
+            else
+                local_result += matrix.matrix[tab[i]][tab[i + 1]].value;
+        }
+
+        if(local_result <= result || result == -1)
+            result = local_result;
+        
+        local_result = 0;
+
+  } while ( std::next_permutation(tab, tab + matrix.size()) );
+
+  delete [] tab;
+
+  std::cout << "brute force result: " << result << std::endl;
+}
+
+std::list<BranchAndBound::Edge> BranchAndBound::returnEdges(){
+    return finalEdges;
+} 
