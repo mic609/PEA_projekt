@@ -5,26 +5,25 @@
 #include <iterator>
 #include <limits>
 
+BranchAndBound::BranchAndBound(){
+    final_result = INT_MAX;
+}
+
 // funkcja zwraca tzn. lower bound, czyli dolne ograniczenie dla problemu komiwojażera
 // funkcja dodatkowo redukuje kolumny i wiersze macierzy
 int BranchAndBound::reduceRowColumn(Matrix& m){
-    int reduce_row = 0;
-    int reduce_row_total = 0;
-    int reduce_column = 0;
-    int reduce_column_total = 0;
+    int reduce_row = 0; // koszt redukcji wybranego wiersza
+    int reduce_row_total = 0; // koszt redukcji wszystkich wierszy
+    int reduce_column = 0; // koszt redukcji wybranej kolumny
+    int reduce_column_total = 0; // koszt redukcji wszystkich kolumn
     std::list<int> help_list;
 
     // redukcja wierszy
     for(int i = 0; i < m.size(); i++){
-        for(int j = 0; j < m.size(); j++){
-            if (m.matrix[i][j].value >= 0){
-                help_list.push_back(m.matrix[i][j].value);
-                // for (auto const &w: help_list) {
-                //     std::cout << w << std::endl;
-                // }
-                // std::cout << std::endl;
-            }
-        }
+        for(int j = 0; j < m.size(); j++)
+            if (m.matrix[i][j].value >= 0)
+                help_list.push_front(m.matrix[i][j].value);
+
         reduce_row = *std::min_element(help_list.begin(), help_list.end());
         reduce_row_total += reduce_row;
 
@@ -37,11 +36,10 @@ int BranchAndBound::reduceRowColumn(Matrix& m){
 
     // redukcja kolumn
     for(int j = 0; j < m.size(); j++){
-        for(int i = 0; i < m.size(); i++){
-            if (m.matrix[i][j].value >= 0){
-                help_list.push_back(m.matrix[i][j].value);
-            }
-        }
+        for(int i = 0; i < m.size(); i++)
+            if (m.matrix[i][j].value >= 0)
+                help_list.push_front(m.matrix[i][j].value);
+    
         reduce_column = *std::min_element(help_list.begin(), help_list.end());
         reduce_column_total += reduce_column;
 
@@ -55,6 +53,7 @@ int BranchAndBound::reduceRowColumn(Matrix& m){
     return (reduce_row_total + reduce_column_total);
 }
 
+// funkcja dla danego zera w macierzy oblicza jego bottom_limit
 int BranchAndBound::bottomLimit(Matrix m, int i, int j){
 
     int min_row = 0, min_col = 0, min = 0;
@@ -63,7 +62,7 @@ int BranchAndBound::bottomLimit(Matrix m, int i, int j){
 
     for(int k = 0; k < m.size(); k++)
         if(k != j && m.matrix[i][k].value >= 0)
-            help_list.push_back(m.matrix[i][k].value);
+            help_list.push_front(m.matrix[i][k].value);
 
     min_row = *std::min_element(help_list.begin(), help_list.end());
 
@@ -71,7 +70,7 @@ int BranchAndBound::bottomLimit(Matrix m, int i, int j){
 
     for(int k = 0; k < m.size(); k++)
         if(k != i && m.matrix[k][j].value >= 0)
-            help_list.push_back(m.matrix[k][j].value);
+            help_list.push_front(m.matrix[k][j].value);
 
     min_col = *std::min_element(help_list.begin(), help_list.end());
     
@@ -80,130 +79,191 @@ int BranchAndBound::bottomLimit(Matrix m, int i, int j){
     return min;
 }
 
+// funkcja sprawdza czy wybór określonej krawędzi na danym etapie, nie spowodowałby powstania grafu niespójnego
+bool BranchAndBound::checkIfConnected(std::list<Edge> edges){
+    std::list<Edge>::iterator it;
+    std::list<Edge>::iterator iter;
+
+    for(iter = edges.begin(); iter != edges.end(); iter++){
+        Edge beginEdge, iteratorEdge;
+        beginEdge.od_w = iter->od_w;
+        beginEdge.do_w = iter->do_w;
+        iteratorEdge = beginEdge;
+
+        for (it = edges.begin(); it != edges.end(); it++){
+            if(iteratorEdge.od_w != beginEdge.od_w && iteratorEdge.do_w != beginEdge.do_w){
+                if(iteratorEdge.do_w == beginEdge.od_w)
+                    return false;
+            }
+            if(iteratorEdge.do_w == it->od_w){
+                iteratorEdge.od_w = it->od_w;
+                iteratorEdge.do_w = it->do_w;
+                it = edges.begin();
+            }
+        }
+    }
+    return true;
+}
+
+// główna funkcja klasy BranchAndBound, uruchamia drzewo wywołań, oblicza dolne ograniczenie dla danego problemu
 void BranchAndBound::algorithm(Matrix matrix){
-    lower_bound = BranchAndBound::reduceRowColumn(matrix);
+    lower_bound = BranchAndBound::reduceRowColumn(matrix); // obliczamy ograniczenie dolne dla macierzy
     int result = lower_bound;
     std::list<Edge> edges;
-    final_result = INT_MAX;
 
-    BranchAndBound alg;
-    result = alg.executionLeft(matrix, result, edges, true);
+    result = this->executionLeft(matrix, result, edges, true); // zaczynamy łańcuch rekurencji
     std::cout << "result: " << result << std::endl;
 
-    std::cout << "FINALLY: " << std::endl;
-    for (auto v : alg.returnEdges()){
+    std::cout << "edges: " << std::endl;
+    for (auto v : returnEdges()){
         std::cout << v.od_w;
         std::cout << " " << v.do_w << "\n";
     }
 }
 
+// lewe poddrzewo
 int BranchAndBound::executionLeft(Matrix& matrix, int result, std::list<Edge> edges, bool start_exec){
-
-    std::cout << "Left Wing: ";
-    std::cout<< result << std::endl;
 
     int local_lower_bound = 0;
     if(start_exec == false)
-        local_lower_bound = BranchAndBound::reduceRowColumn(matrix);
-    else
+        local_lower_bound = BranchAndBound::reduceRowColumn(matrix); // oblicz o ile wzrośnie dolne ograniczenie
+    else // jeśli wcześniej obliczaliśmy ograniczenie dolne, nie rób tego ponownie
         start_exec = false;
 
     result += local_lower_bound;
     if(result >= final_result)
         return result;
 
-    int bottom_limit = 0;
+    int bottom_limit = 0; // maksymalny wzrost dolnego ograniczenia dla prawego poddrzewa
     int i_red, j_red;
+    int zeros_count = 0; // ile zer jest w naszej obecnej macierzy
 
+    // szukamy bottom_limit w pętli
     for(int i = 0; i < matrix.size(); i++){
         for(int j = 0; j < matrix.size(); j++){
-            if(matrix.matrix[i][j].value == 0){
+            if(i != j && edges.size() != matrix.size() - 1){
+                Edge elem;
+                elem.od_w = i;
+                elem.do_w = j;
+                edges.push_front(elem);
+                if(this->checkIfConnected(edges) == false){
+                    matrix.matrix[i][j].value = -1;
+                }
+                edges.pop_front();
+            }
+            if(matrix.matrix[i][j].value == 0){ // szukamy zer w macierzy
                 int previous_bottom_limit = bottom_limit;
 
-                bottom_limit = BranchAndBound::bottomLimit(matrix, i, j);
-                if(previous_bottom_limit > bottom_limit){
+                bottom_limit = BranchAndBound::bottomLimit(matrix, i, j); // dla danego zera obliczamy maksymalny wzrost dolnego ograniczenia dla prawego poddrzewa
+                if(previous_bottom_limit > bottom_limit){ // jeśli dla danego zera bottom_limit nie jest maksymalny, to nie zmieniaj wartości dotychczasowego bottom_limit
                     bottom_limit = previous_bottom_limit;
                 }
-                else{
+                else{ // zapisujemy wiersz i kolumnę dla nowego wyniku bottom_limit
                     i_red = i;
                     j_red = j;
                 }
+                zeros_count ++;
             }
         }
     }
 
-    int resultSec = result + bottom_limit;
+    // std::cout << "edges here: " << std::endl;
+    // for (auto v : edges){
+    //     std::cout << v.od_w;
+    //     std::cout << " " << v.do_w << "\n";
+    // }
 
-    if(bottom_limit != 0){
+    int resultSec = result + bottom_limit; // dolne ograniczenie dla prawego poddrzewa
+
+    if(zeros_count > 1 && bottom_limit == 0){ // jeśli nasze dolne ograniczenie wynosi zero, ale macierz nie jest jeszcze wielkości 1x1, należy sprawdzić
+                                              // która krawędź ze zbioru pozostałych ma być dodana do wyniku jako kolejna
+        Matrix help_matrix(4);
+        for(int i = 0; i < matrix.size(); i++){
+            for(int j = 0; j < matrix.size(); j++){
+                if(matrix.matrix[i][j].value == 0){ // wybieramy jedno z pozostałych zer. Szukamy zera, które da najmniejszy wynik
+                    Edge elem;
+                    elem.od_w = i;
+                    elem.do_w = j;
+                    edges.push_front(elem); // dodajemy krawędź do zbioru wynikowego
+
+                    help_matrix = matrix;
+
+                    if(result <= resultSec){
+                        matrix.matrix[j][i].value = -1;
+                        matrix.removeColumnRow(i, j);
+                        int result_temp = result;
+                        result = BranchAndBound::executionLeft(matrix, result, edges);
+
+                        if(result == -401){
+                            edges.pop_front();
+                            result = result_temp;
+                        }
+                        else if(result > final_result){ // w kolejnej iteracji pętli będziemy porównywać, które zero daje mniejszy wynik
+                            return result;
+                        }
+                        matrix = help_matrix;
+                    }
+                    if(result > resultSec){ // rozpatrujemy prawe poddrzewo dla wybranego zera
+                        help_matrix.matrix[i_red][j_red].value = -1;
+                        if(!edges.empty())
+                            edges.pop_front();
+                        resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i, j, edges);
+                        if(resultSec > final_result){
+                            edges.pop_front();
+                            return resultSec;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if(zeros_count > 1){ // jeśli nasza macierz ma wymiary > (1x1)
 
         Edge elem;
         elem.od_w = i_red;
         elem.do_w = j_red;
-        edges.push_back(elem);
-
-        for (auto v : edges){
-            std::cout << v.od_w;
-            std::cout << " " << v.do_w << "\n";
-        }
+        edges.push_front(elem); // dodajemy krawędź do zbioru krawędzi wynikowych
 
         Matrix help_matrix(4);
         help_matrix = matrix;
 
-        if(result < resultSec){
-            if(j_red < matrix.size() && i_red < matrix.size())
-                matrix.matrix[j_red][i_red].value = -1;
-            matrix.removeColumnRow(i_red, j_red);
-
-            result = BranchAndBound::executionLeft(matrix, result, edges);
+        if(result < resultSec){ // jeśli dolne ograniczenie lewego poddrzewa jest mniejsze od prawego
+            matrix.matrix[j_red][i_red].value = -1;
+            matrix.removeColumnRow(i_red, j_red); // usuwamy rząd i kolumnę o wartościach takich samych jak dla wcześniej obliczonego bottom_limit
+            result = BranchAndBound::executionLeft(matrix, result, edges); // rozwijamy lewe poddrzewo
         }
-        if(result >= resultSec){
+        if(result >= resultSec){ // jeśli okazało się, że dolne ograniczenie dla lewego poddrzewa nie jest jednak minimalne, musimy sprawdzić prawe poddrzewo
             help_matrix.matrix[i_red][j_red].value = -1;
-            if(!edges.empty())
+            if(!edges.empty()) // rozwijając prawe poddrzewo nie bierzemy pod uwagę wcześniej dodanej krawędzi
                 edges.pop_front();
-            resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i_red, j_red, edges);
+            resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i_red, j_red, edges); // rozwijamy prawe poddrzewo
         }
     }
-    else{
-        int j_temp = -1;
-        int i_temp = -1;
-        for(int i = 0; i < matrix.size(); i++){
-            for(int j = 0; j < matrix.size(); j++){
-                if(matrix.matrix[i][j].value == 0 && j != j_temp && i != i_temp){
-                    Edge elem;
-                    elem.od_w = i;
-                    elem.do_w = j;
-                    i_temp = i;
-                    j_temp = j;
-                    edges.push_front(elem);
-                }
-            }
-        }
-        while(edges.size() > matrix.size())
-            edges.pop_front();
-        
-        if(!finalEdges.empty())
+    else if (edges.size() == matrix.size() - 1){ // jeśli nasza macierz ma wymiary 1x1
+
+        Edge elem;
+        elem.od_w = i_red;
+        elem.do_w = j_red;
+        edges.push_front(elem); // dodajemy ostatnią krawędź do listy krawędzi wynikowych
+
+        if(!finalEdges.empty()) // wcześniejsza lista krawędzi wynikowych (jeśli jest zapełniona), zostaje usunięta
             finalEdges.clear();
 
-        std::copy( edges.begin(), edges.end(), std::back_inserter(finalEdges) );
+        std::copy( edges.begin(), edges.end(), std::back_inserter(finalEdges) ); // zapisujemy krawędzie wynikowe
 
-        final_result = result;
-
-        std::cout << "FINALLY: " << std::endl;
-        for (auto v : finalEdges){
-            std::cout << v.od_w;
-            std::cout << " " << v.do_w << "\n";
-        }
+        final_result = result; // zapisujemy otrzymany rezultat dla danego rozgałęzienia
     }
+    else // jeśli nie zostało znalezione żadne zero, oznacza to, że dana krawędź nie może być dodana
+        return -401; // wartość domyślna -401
 
     if(result > resultSec)
         return resultSec;
-    else
+    else // jeśli wynik z lewego poddrzewa jest mniejszy od prawego, zapisz wynik lewego
         return result;
 }
-int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r, std::list<Edge> edges, bool start_exec){
 
-    std::cout << "Right Wing: ";
-    std::cout<< result << std::endl;
+// prawe poddrzewo (działa praktycznie analogicznie jak lewe, pomijając etap początkowy)
+int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r, std::list<Edge> edges, bool start_exec){
 
     std::list<int> help_list;
     int min_col = 0;
@@ -212,7 +272,7 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 
     for(int i = 0; i < matrix.size(); i++){
         if(matrix.matrix[i][j_r].value >= 0)
-            help_list.push_back(matrix.matrix[i][j_r].value);
+            help_list.push_front(matrix.matrix[i][j_r].value);
     }
     min_col = *std::min_element(help_list.begin(), help_list.end());
 
@@ -224,7 +284,7 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 
     for(int j = 0; j < matrix.size(); j++){
         if(matrix.matrix[i_r][j].value >= 0)
-            help_list.push_back(matrix.matrix[i_r][j].value);
+            help_list.push_front(matrix.matrix[i_r][j].value);
     }
     min_row = *std::min_element(help_list.begin(), help_list.end());
 
@@ -234,83 +294,114 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 
     help_list.clear();
 
-    min = min_col + min_row;
-    result += min;
-    if(result >= final_result)
-        return result;
-
     int bottom_limit = 0;
     int i_red, j_red;
+    int zeros_count = 0;
 
     for(int i = 0; i < matrix.size(); i++){
         for(int j = 0; j < matrix.size(); j++){
             if(matrix.matrix[i][j].value == 0){
                 int previous_bottom_limit = bottom_limit;
 
-                bottom_limit = BranchAndBound::bottomLimit(matrix, i, j);
-                if(previous_bottom_limit > bottom_limit){
+                bottom_limit = BranchAndBound::bottomLimit(matrix, i, j); // dla danego zera obliczamy maksymalny wzrost dolnego ograniczenia dla prawego poddrzewa
+                if(previous_bottom_limit > bottom_limit){ // jeśli dla danego zera bottom_limit nie jest maksymalny, to nie zmieniaj wartości dotychczasowego bottom_limit
                     bottom_limit = previous_bottom_limit;
                 }
-                else{
-                    i_red = i;
-                    j_red = j;
+                else{ // zapisujemy wiersz i kolumnę dla nowego wyniku bottom_limit
+                    Edge elem;
+                    elem.od_w = i;
+                    elem.do_w = j;
+                    edges.push_front(elem);
+                    if(this->checkIfConnected(edges) == false){
+                        bottom_limit = previous_bottom_limit;
+                        matrix.matrix[i][j].value = -1;
+                    }
+                    else{
+                        i_red = i;
+                        j_red = j;
+                    }
+                    edges.pop_front();
                 }
+                zeros_count ++;
             }
         }
     }
 
     int resultSec = result + bottom_limit;
 
-    if(bottom_limit != 0){
+     if(zeros_count > 1 && bottom_limit == 0){
+        Matrix help_matrix(4);
+        for(int i = 0; i < matrix.size(); i++){
+            for(int j = 0; j < matrix.size(); j++){
+                if(matrix.matrix[i][j].value == 0){
+                    Edge elem;
+                    elem.od_w = i;
+                    elem.do_w = j;
+                    edges.push_front(elem);
+
+                    help_matrix = matrix;
+
+                    if(result <= resultSec){
+                        matrix.matrix[j][i].value = -1;
+                        matrix.removeColumnRow(i, j);
+                        int result_temp = result;
+                        result = BranchAndBound::executionLeft(matrix, result, edges);
+
+                        if(result == -401){
+                            edges.pop_front();
+                            result = result_temp;
+                        }
+                        else if(result > final_result){
+                            return result;
+                        }
+                        matrix = help_matrix;
+                    }
+                    if(result > resultSec){
+                        help_matrix.matrix[i_red][j_red].value = -1;
+                        if(!edges.empty())
+                            edges.pop_front();
+                        resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i, j, edges);
+                        if(resultSec > final_result)
+                            return resultSec;
+                    }
+                }
+            }
+        }
+    }
+    else if(zeros_count > 1){
 
         Edge elem;
         elem.od_w = i_red;
         elem.do_w = j_red;
-        edges.push_back(elem);
+        edges.push_front(elem);
 
         Matrix help_matrix(4);
         help_matrix = matrix;
 
-        for (auto v : edges){
-            std::cout << v.od_w;
-            std::cout << " " << v.do_w << "\n";
-        }
-
         if(result < resultSec){
-            //std::cout << "left wing: " << std::endl;
-            //matrix.showGraph();
-            if(j_red < matrix.size() && i_red < matrix.size())
-                matrix.matrix[j_red][i_red].value = -1;
+            matrix.matrix[j_red][i_red].value = -1;
             matrix.removeColumnRow(i_red, j_red);
             result = BranchAndBound::executionLeft(matrix, result, edges);
         }
         if(result >= resultSec){
-            //std::cout << "right wing: " << std::endl;
-            //help_matrix.showGraph();
             help_matrix.matrix[i_red][j_red].value = -1;
             if(!edges.empty())
                 edges.pop_front();
             resultSec = BranchAndBound::executionRight(help_matrix, resultSec, i_red, j_red, edges);
         }
     }
-    else{
-        int j_temp = -1;
-        int i_temp = -1;
+    else if (edges.size() == matrix.size() - 1){
         for(int i = 0; i < matrix.size(); i++){
             for(int j = 0; j < matrix.size(); j++){
-                if(matrix.matrix[i][j].value == 0 && j != j_temp && i != i_temp){
+                if(matrix.matrix[i][j].value == 0){
                     Edge elem;
                     elem.od_w = i;
                     elem.do_w = j;
-                    i_temp = -1;
-                    j_temp = j;
                     edges.push_front(elem);
+                    break;
                 }
             }
         }
-        while(edges.size() > matrix.size())
-            edges.pop_front();
-
         if(!finalEdges.empty())
             finalEdges.clear();
 
@@ -318,6 +409,8 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 
         final_result = result;
     }
+    else
+        return -401;
 
     if(result > resultSec)
         return resultSec;
@@ -329,6 +422,7 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 void BranchAndBound::bruteForce(Matrix matrix){
     int *tab = new int[matrix.size()];
     int result = -1;
+    std::list<Edge> bruteEdges;
     for(int i = 0; i < matrix.size(); i++)
         tab[i] = i;
     
@@ -336,15 +430,33 @@ void BranchAndBound::bruteForce(Matrix matrix){
         int local_result;
 
         for(int i = 0; i < matrix.size(); i++){
-            if(i == matrix.size() - 1)
+            if(i == matrix.size() - 1){
                 local_result += matrix.matrix[tab[matrix.size() - 1]][tab[0]].value;
-            else
+            }
+            else{
                 local_result += matrix.matrix[tab[i]][tab[i + 1]].value;
+            }
         }
 
-        if(local_result <= result || result == -1)
+        if(local_result <= result || result == -1){
+            if(!bruteEdges.empty())
+                bruteEdges.clear();
+            for(int i = 0; i < matrix.size(); i++){
+                Edge elem;
+                if(i == matrix.size() - 1){
+                    elem.od_w = tab[matrix.size() - 1];
+                    elem.do_w = tab[0];
+                    bruteEdges.push_front(elem);
+                }
+                else{
+                    elem.od_w = tab[i];
+                    elem.do_w = tab[i + 1];
+                    bruteEdges.push_front(elem);
+                }
+            }
             result = local_result;
-        
+        }
+
         local_result = 0;
 
   } while ( std::next_permutation(tab, tab + matrix.size()) );
@@ -352,8 +464,13 @@ void BranchAndBound::bruteForce(Matrix matrix){
   delete [] tab;
 
   std::cout << "brute force result: " << result << std::endl;
+  std::cout << "brute edges: " << std::endl;
+   for (auto v : bruteEdges){
+        std::cout << v.od_w;
+        std::cout << " " << v.do_w << "\n";
+    }
 }
 
 std::list<BranchAndBound::Edge> BranchAndBound::returnEdges(){
     return finalEdges;
-} 
+}

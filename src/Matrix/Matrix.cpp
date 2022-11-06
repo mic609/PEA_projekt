@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <random>
 
 Matrix::Matrix(int size){
     s = size;
@@ -35,6 +36,37 @@ void Matrix::readFromFile(std::string filename){
     }
     
     file.close();
+}
+
+void Matrix::generateRandom(int size){
+
+    srand(time(NULL));
+    
+    if(size > 0)
+        s = size;
+    else{
+        int max = 20;
+        int min = 3;
+        int range = max - min + 1;
+        s = rand() % range + min;
+    }
+
+    matrix = decltype(matrix)(s, std::vector<Edge>(s));
+
+    for(int i = 0; i < s; i++){
+        for(int j = 0; j < s; j++){
+            if(i == j){
+                matrix[i][j].value = -1;
+                matrix[i][j].row_number = i;
+                matrix[i][j].col_number = j;
+            }
+            else{
+                matrix[i][j].value = rand()%1000+1;
+                matrix[i][j].row_number = i;
+                matrix[i][j].col_number = j;
+            }
+        }
+    }
 }
 
 void Matrix::showGraph(){

@@ -32,10 +32,16 @@ void Start::chooseAlgorithm(int user_inp){
             std::cout << "Type file name: ";
             std::cin >> filename;
             matrix.readFromFile(filename);
+            matrix.showGraph();
             break;
         }
         case 2:
-        {
+        {   
+            int size;
+            std::cout << "Matrix size (0- random size): ";
+            std::cin >> size;
+            matrix.generateRandom(size);
+            matrix.showGraph();
             break;
         }
     }
@@ -54,9 +60,15 @@ void Start::chooseAlgorithm(int user_inp){
             BranchAndBound alg;
             // uruchamiamy algorytm
             alg.algorithm(matrix);
-            //alg.bruteForce(matrix);
+
+            int bruteForceinput;
+            std::cout << "Uruchomic Brute Force? (0- NIE)" << std::endl;
+            std::cout << "Input: ";
+            std::cin >> bruteForceinput;
+            if(bruteForceinput)
+                alg.bruteForce(matrix);
+
             std::cout<<std::endl<<std::endl;
-            matrix.showGraph();
             break;
         }
     }

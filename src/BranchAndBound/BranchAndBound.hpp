@@ -18,8 +18,10 @@ class BranchAndBound{
     int final_result;
 
     public:
+    BranchAndBound();
     static int reduceRowColumn(Matrix&); // zwraca wartość redukcji
     static int bottomLimit(Matrix, int, int);
+    bool checkIfConnected(std::list<Edge>);
     void algorithm(Matrix);
     int executionLeft(Matrix&, int, std::list<Edge>, bool = false);
     int executionRight(Matrix&, int, int, int, std::list<Edge>, bool = false);

@@ -20,6 +20,7 @@ class Matrix{
     public:
     Matrix(int);
     void readFromFile(std::string);
+    void generateRandom(int = 0);
     void showGraph();
     void removeColumnRow(int, int);
     int size();
