@@ -19,14 +19,15 @@ class BranchAndBound{
 
     public:
     BranchAndBound();
-    static int reduceRowColumn(Matrix&); // zwraca wartość redukcji
+    static int reduceRowColumn(Matrix&);
     static int bottomLimit(Matrix, int, int);
     bool checkIfConnected(std::list<Edge>);
     void algorithm(Matrix);
     int executionLeft(Matrix&, int, std::list<Edge>, bool = false);
     int executionRight(Matrix&, int, int, int, std::list<Edge>, bool = false);
     void bruteForce(Matrix);
-    std::list<Edge> returnEdges();
+
+    void showResult();
 };
 
 #endif

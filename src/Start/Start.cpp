@@ -1,6 +1,7 @@
 #include <Start.hpp>
 #include <Matrix.hpp>
 #include <BranchAndBound.hpp>
+#include <BruteForce.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -57,16 +58,20 @@ void Start::chooseAlgorithm(int user_inp){
     switch(user_inp){
         case 1:
         {
-            BranchAndBound alg;
+            BranchAndBound alg1;
+            BruteForce alg2;
             // uruchamiamy algorytm
-            alg.algorithm(matrix);
+            alg1.algorithm(matrix);
+            alg1.showResult();
 
             int bruteForceinput;
-            std::cout << "Uruchomic Brute Force? (0- NIE)" << std::endl;
+            std::cout << std::endl << "Uruchomic Brute Force? (0- NIE)" << std::endl;
             std::cout << "Input: ";
             std::cin >> bruteForceinput;
-            if(bruteForceinput)
-                alg.bruteForce(matrix);
+            if(bruteForceinput){
+                alg2.algorithm(matrix);
+                alg2.showResult();
+            }
 
             std::cout<<std::endl<<std::endl;
             break;

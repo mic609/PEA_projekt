@@ -112,13 +112,7 @@ void BranchAndBound::algorithm(Matrix matrix){
     std::list<Edge> edges;
 
     result = this->executionLeft(matrix, result, edges, true); // zaczynamy łańcuch rekurencji
-    std::cout << "result: " << result << std::endl;
-
-    std::cout << "edges: " << std::endl;
-    for (auto v : returnEdges()){
-        std::cout << v.od_w;
-        std::cout << " " << v.do_w << "\n";
-    }
+    final_result = result;
 }
 
 // lewe poddrzewo
@@ -166,12 +160,6 @@ int BranchAndBound::executionLeft(Matrix& matrix, int result, std::list<Edge> ed
             }
         }
     }
-
-    // std::cout << "edges here: " << std::endl;
-    // for (auto v : edges){
-    //     std::cout << v.od_w;
-    //     std::cout << " " << v.do_w << "\n";
-    // }
 
     int resultSec = result + bottom_limit; // dolne ograniczenie dla prawego poddrzewa
 
@@ -419,58 +407,27 @@ int BranchAndBound::executionRight(Matrix& matrix, int result, int i_r, int j_r,
 
 }
 
-void BranchAndBound::bruteForce(Matrix matrix){
-    int *tab = new int[matrix.size()];
-    int result = -1;
-    std::list<Edge> bruteEdges;
-    for(int i = 0; i < matrix.size(); i++)
-        tab[i] = i;
-    
-    do {
-        int local_result;
+void BranchAndBound::showResult(){
+    std::cout << std::endl << "Result (B&B): " << final_result << std::endl;
 
-        for(int i = 0; i < matrix.size(); i++){
-            if(i == matrix.size() - 1){
-                local_result += matrix.matrix[tab[matrix.size() - 1]][tab[0]].value;
+    std::cout << "Edges: " << std::endl;
+    std::list<Edge>::iterator it = finalEdges.begin();
+    std::list<Edge>::iterator beginit = finalEdges.begin();
+    std::list<Edge>::iterator iter;
+    std::cout << "("<< it->od_w << ", ";
+    std::cout << it->do_w << ")" << std::endl;
+
+    for (iter = finalEdges.begin(); iter != finalEdges.end(); iter++){
+        if(it != iter){
+            if(it->do_w == beginit->od_w){
+                break;
             }
-            else{
-                local_result += matrix.matrix[tab[i]][tab[i + 1]].value;
+            if(it->do_w == iter->od_w){
+                std::cout << "("<< iter->od_w << ", ";
+                std::cout << iter->do_w << ")" << std::endl;
+                it = iter;
+                iter = finalEdges.begin();
             }
         }
-
-        if(local_result <= result || result == -1){
-            if(!bruteEdges.empty())
-                bruteEdges.clear();
-            for(int i = 0; i < matrix.size(); i++){
-                Edge elem;
-                if(i == matrix.size() - 1){
-                    elem.od_w = tab[matrix.size() - 1];
-                    elem.do_w = tab[0];
-                    bruteEdges.push_front(elem);
-                }
-                else{
-                    elem.od_w = tab[i];
-                    elem.do_w = tab[i + 1];
-                    bruteEdges.push_front(elem);
-                }
-            }
-            result = local_result;
-        }
-
-        local_result = 0;
-
-  } while ( std::next_permutation(tab, tab + matrix.size()) );
-
-  delete [] tab;
-
-  std::cout << "brute force result: " << result << std::endl;
-  std::cout << "brute edges: " << std::endl;
-   for (auto v : bruteEdges){
-        std::cout << v.od_w;
-        std::cout << " " << v.do_w << "\n";
     }
-}
-
-std::list<BranchAndBound::Edge> BranchAndBound::returnEdges(){
-    return finalEdges;
 }

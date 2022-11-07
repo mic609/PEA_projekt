@@ -1,13 +1,13 @@
-set(MODULE_NAME start)
+set(MODULE_NAME bruteforce)
 
 message("compile ${MODULE_NAME}")
 
 set(INTERNAL_FILES
-  Start.cpp
+  BruteForce.cpp
 )
 
 set(PUBLIC_HEADERS
-  Start.hpp
+  BruteForce.hpp
 )
 
 add_library(
@@ -29,8 +29,6 @@ target_link_libraries(
   ${MODULE_NAME}
   PRIVATE
     lib::matrix
-    lib::branchandbound
-    lib::bruteforce
 )
 
 add_library(lib::${MODULE_NAME} ALIAS ${MODULE_NAME})
