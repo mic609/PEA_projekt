@@ -7,6 +7,7 @@
 class Matrix{
 
     public:
+
     struct Edge{
         int value;
         int row_number;
@@ -15,9 +16,11 @@ class Matrix{
     std::vector<std::vector<Edge>> matrix; //graf
     
     private:
+
     int s; // liczba wierszy/kolumn
 
     public:
+    
     Matrix(int);
     void readFromFile(std::string);
     void generateRandom(int = 0);

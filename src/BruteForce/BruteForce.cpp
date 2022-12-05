@@ -2,6 +2,9 @@
 #include <Matrix.hpp>
 #include <algorithm>
 
+//--------------------------------------------------------------------------------------------------------------------------
+// algorytm Brute Force
+//--------------------------------------------------------------------------------------------------------------------------
 void BruteForce::algorithm(Matrix matrix){
     int *tab = new int[matrix.size()];
     int result = -1;
@@ -50,27 +53,38 @@ void BruteForce::algorithm(Matrix matrix){
   finalEdges = bruteEdges;
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Wypisanie wyniku obliczeń algorytmu
+//--------------------------------------------------------------------------------------------------------------------------
 void BruteForce::showResult(){
     std::cout << std::endl << "Result (Brute Force): " << final_result << std::endl;
 
     std::cout << "Edges: " << std::endl;
-    std::list<Edge>::iterator it = finalEdges.begin();
-    std::list<Edge>::iterator beginit = finalEdges.begin();
+    std::list<Edge>::iterator it;
     std::list<Edge>::iterator iter;
-    std::cout << "("<< it->od_w << ", ";
-    std::cout << it->do_w << ")" << std::endl;
+    std::list<Edge>::iterator beginiter;
 
     for (iter = finalEdges.begin(); iter != finalEdges.end(); iter++){
-        if(it != iter){
-            if(it->do_w == beginit->od_w){
-                break;
-            }
-            if(it->do_w == iter->od_w){
-                std::cout << "("<< iter->od_w << ", ";
-                std::cout << iter->do_w << ")" << std::endl;
-                it = iter;
-                iter = finalEdges.begin();
-            }
+        if(iter->od_w == 0){
+            std::cout << iter->od_w << " - ";
+            std::cout << iter->do_w;
+            it = iter;
+            break;
+        }
+    }
+    bool newloop = true;
+    for (iter = finalEdges.begin(); ; iter++){
+        if(newloop == true){
+            iter = finalEdges.begin();
+            newloop = false;
+        }
+        if(it->do_w == 0){
+            break;
+        }
+        if(it->do_w == iter->od_w){
+            std::cout << " - " <<iter->do_w;
+            it = iter;
+            newloop = true;
         }
     }
 }

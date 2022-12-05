@@ -4,9 +4,10 @@
 class Start{
     public:
     void welcomeMessage();
+    long long int read_QPC();
 
     private:
-    static void chooseAlgorithm(int);
+    void chooseAlgorithm(int);
 };
 
 #endif

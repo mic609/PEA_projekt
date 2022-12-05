@@ -31,6 +31,7 @@ target_link_libraries(
     lib::matrix
     lib::branchandbound
     lib::bruteforce
+    lib::dynamicprogramming
 )
 
 add_library(lib::${MODULE_NAME} ALIAS ${MODULE_NAME})

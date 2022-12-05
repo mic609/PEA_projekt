@@ -12,10 +12,12 @@ class BruteForce{
     };
 
     private:
+
     std::list<Edge> finalEdges;
     int final_result;
 
     public:
+    
     void algorithm(Matrix);
     void showResult();
 };

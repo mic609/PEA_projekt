@@ -6,15 +6,17 @@
 #include <random>
 
 Matrix::Matrix(int size){
-    s = size;
+    s = size; // Ustawiamy wielkość macierzy
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda, wczytująca macierz z pliku
+//--------------------------------------------------------------------------------------------------------------------------
 void Matrix::readFromFile(std::string filename){
 
-    // wczytywanie z pliku
     std::fstream file;
 
-    file.open("D:/STUDIA/Semestr_V/PEA/projekt/program/PEA_projekt/tests/" + filename, std::ios::in);
+    file.open("../../PEA_projekt/tests/" + filename, std::ios::in);
 
     if(file.good() == false){
         std::cout << "The file could not be opened! " << std::endl;
@@ -25,6 +27,7 @@ void Matrix::readFromFile(std::string filename){
         file >> s;
         matrix = decltype(matrix)(s, std::vector<Edge>(s));
 
+        // Poniżej przypisujemy wartości z wczytanego pliku, do naszej macierzy 
         for(int i = 0; i < s; i++){
             for(int j = 0; j < s; j++){
                 file >> val;
@@ -38,13 +41,14 @@ void Matrix::readFromFile(std::string filename){
     file.close();
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda generuje losową macierz
+//--------------------------------------------------------------------------------------------------------------------------
 void Matrix::generateRandom(int size){
-
-    srand(time(NULL));
     
     if(size > 0)
         s = size;
-    else{
+    else{ // Wielkość macierzy jest generowana losowo z przedziału <min, max> jeśli użytkownik nie podał jej wielkości
         int max = 20;
         int min = 3;
         int range = max - min + 1;
@@ -53,15 +57,16 @@ void Matrix::generateRandom(int size){
 
     matrix = decltype(matrix)(s, std::vector<Edge>(s));
 
+    // Poniżej przypisujemy losowe wartości do macierzy z wybranego przydziału
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
             if(i == j){
-                matrix[i][j].value = -1;
+                matrix[i][j].value = 0;
                 matrix[i][j].row_number = i;
                 matrix[i][j].col_number = j;
             }
             else{
-                matrix[i][j].value = rand()%1000+1;
+                matrix[i][j].value = rand()%1000+1; // widoczny przedział
                 matrix[i][j].row_number = i;
                 matrix[i][j].col_number = j;
             }
@@ -69,6 +74,9 @@ void Matrix::generateRandom(int size){
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Funkcja wyświetla macierz
+//--------------------------------------------------------------------------------------------------------------------------
 void Matrix::showGraph(){
     for(int i = 0; i < s; i++){
         for(int j = 0; j < s; j++){
@@ -78,6 +86,9 @@ void Matrix::showGraph(){
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Funkcja usuwa kolumnę o indeksie columnIndex i wiersz o indeksie rowIndex
+//--------------------------------------------------------------------------------------------------------------------------
 void Matrix::removeColumnRow(int rowIndex, int columnIndex){
 
     for(int i = 0; i < s; i++)
@@ -88,6 +99,9 @@ void Matrix::removeColumnRow(int rowIndex, int columnIndex){
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Funkcja zwraca wymiar macierzy
+//--------------------------------------------------------------------------------------------------------------------------
 int Matrix::size(){
     return s;
 }
