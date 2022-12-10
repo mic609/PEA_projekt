@@ -7,6 +7,7 @@ add_subdirectory(Matrix)
 add_subdirectory(BranchAndBound)
 add_subdirectory(BruteForce)
 add_subdirectory(DynamicProgramming)
+add_subdirectory(SimAnn)
 
 add_executable(
   ${MODULE_NAME} 

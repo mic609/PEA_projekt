@@ -3,6 +3,7 @@
 #include <BranchAndBound.hpp>
 #include <BruteForce.hpp>
 #include <DynamicProgramming.hpp>
+#include <SimAnn.hpp>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -54,8 +55,10 @@ void Start::chooseAlgorithm(int user_inp){
             std::string filename;
             std::cout << "Type file name: ";
             std::cin >> filename;
+            std::cout << std::endl;
             matrix.readFromFile(filename);
             matrix.showGraph();
+            std::cout << std::endl;
             break;
         }
         case 2:
@@ -63,8 +66,10 @@ void Start::chooseAlgorithm(int user_inp){
             int size;
             std::cout << "Matrix size (0- random size): ";
             std::cin >> size;
+            std::cout << std::endl;
             matrix.generateRandom(size);
             matrix.showGraph();
+            std::cout << std::endl;
             break;
         }
         case 3:
@@ -75,6 +80,7 @@ void Start::chooseAlgorithm(int user_inp){
             std::cout << "2. Brute Force" << std::endl;
             std::cout << "Input: " << std::endl;
             std::cin >> testinp;
+            std::cout << std::endl;
             switch(testinp){
                 case 1:
                 {
@@ -160,7 +166,7 @@ void Start::chooseAlgorithm(int user_inp){
     std::cout << "Choose algorithm: " << std::endl;
     std::cout << "1. Branch and Bound" << std::endl;
     std::cout << "2. Brute Force" << std::endl;
-    std::cout << "3. Dynamic Programming" << std::endl;
+    std::cout << "3. Simulated Annealing" << std::endl;
 
     long long int frequency, start, elapsed;
     QueryPerformanceFrequency((LARGE_INTEGER *)&frequency);
@@ -213,12 +219,34 @@ void Start::chooseAlgorithm(int user_inp){
             }
             case 3:
             {
-                //DynamicProgramming alg(matrix);
-                //alg.algorithm(matrix); // uruchamiamy algorytm
+                SimAnn simalg(matrix.size(), 25000, 0);
 
-                //std::cout<<std::endl<<std::endl;
+                int parameterSet = true;
+
+                std::cout << std::endl << "Do you want to set parameters for SA? (1- yes, 0- no): ";
+                std::cin >> parameterSet;
+
+                double exec_time;
+                std::string neigh_type;
+                double a_const;
+                int k_geom;
+
+                if(parameterSet == 1){
+
+                    std::cout << "Set stopping criterion (execution time in seconds): ";
+                    std::cin >> exec_time;
+                    std::cout << "Set neigbhbourhood type (write: swap, invert): ";
+                    std::cin >> neigh_type;
+                    std::cout << "Set temperature coeffiecient a: ";
+                    std::cin >> a_const;
+                    SimAnn::setParameters(exec_time, neigh_type, a_const, k_geom);
+                }
+                
+                simalg.algorithm(matrix);
+                simalg.showResult();
                 break;
             }
         }
     }
 }
+
