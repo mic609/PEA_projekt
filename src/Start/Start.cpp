@@ -4,6 +4,7 @@
 #include <BruteForce.hpp>
 #include <DynamicProgramming.hpp>
 #include <SimAnn.hpp>
+#include <TabuSearch.hpp>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -167,6 +168,7 @@ void Start::chooseAlgorithm(int user_inp){
     std::cout << "1. Branch and Bound" << std::endl;
     std::cout << "2. Brute Force" << std::endl;
     std::cout << "3. Simulated Annealing" << std::endl;
+    std::cout << "4. Tabu Search" << std::endl;
 
     long long int frequency, start, elapsed;
     QueryPerformanceFrequency((LARGE_INTEGER *)&frequency);
@@ -245,6 +247,35 @@ void Start::chooseAlgorithm(int user_inp){
                 simalg.algorithm(matrix);
                 simalg.showResult();
                 break;
+            }
+            case 4:
+            {
+                TabuSearch tabualg;
+
+                int parameterSet = true;
+
+                std::cout << std::endl << "Do you want to set parameters for TS? (1- yes, 0- no): ";
+                std::cin >> parameterSet;
+
+                double exec_time;
+                std::string neigh_type;
+                int diver;
+
+                if(parameterSet == 1){
+
+                    std::cout << "Set stopping criterion (execution time in seconds): ";
+                    std::cin >> exec_time;
+                    std::cout << "Set neigbhbourhood type (write: swap, invert): ";
+                    std::cin >> neigh_type;
+                    std::cout << "Turn on diversifaction? (1- yes, 0- no): ";
+                    std::cin >> diver;
+                    TabuSearch::setParameters(exec_time, neigh_type, diver);
+                }
+                
+                tabualg.algorithm(matrix);
+                tabualg.showResult();
+                break;
+
             }
         }
     }

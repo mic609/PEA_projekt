@@ -1,13 +1,13 @@
-set(MODULE_NAME start)
+set(MODULE_NAME tabusearch)
 
 message("compile ${MODULE_NAME}")
 
 set(INTERNAL_FILES
-  Start.cpp
+  TabuSearch.cpp
 )
 
 set(PUBLIC_HEADERS
-  Start.hpp
+  TabuSearch.hpp
 )
 
 add_library(
@@ -28,12 +28,7 @@ target_include_directories(
 target_link_libraries(
   ${MODULE_NAME}
   PRIVATE
-    lib::matrix
-    lib::branchandbound
-    lib::bruteforce
-    lib::dynamicprogramming
-    lib::simann
-    lib::tabusearch
+  lib::matrix
 )
 
 add_library(lib::${MODULE_NAME} ALIAS ${MODULE_NAME})

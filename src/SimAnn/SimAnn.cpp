@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <fstream>
 
 double SimAnn::duration_t = 0;
 std::string SimAnn::neighbourhoodType = "";
@@ -140,6 +141,7 @@ void SimAnn::algorithm(Matrix& matrix){
 
         // inicjalizacja sekwencji początkowej
         int array[matrix.size()];
+        double period = this->duration_t/16;
 
         for(int i = 0; i < matrix.size(); i++)
             array[i] = i;
@@ -183,7 +185,7 @@ void SimAnn::algorithm(Matrix& matrix){
                     double randomValueToCompare = ((double) std::rand() / (RAND_MAX)); // wylosuj s z zakresu [0,1]
 
                     // przyjmij rozwiązanie jeśli jest one mniejsze niż prawdopodbieństwo zadane wzorem takim jak dla teorii SA
-                    if(randomValueToCompare < exp(-(wayValueTemp - this->currentValue)/temperature)){
+                    if(randomValueToCompare < exp(-(abs(wayValueTemp - this->currentValue))/temperature)){
                         this->solution = tempSolution;
                         this->currentValue = wayValueTemp;
                     }
@@ -197,7 +199,7 @@ void SimAnn::algorithm(Matrix& matrix){
             end_alg = std::chrono::system_clock::now(); // koniec pomiaru czasu
             elapsed_seconds = end_alg - start_alg; // ilość czasu, która upłyneła od uruchomienia
 
-            if(elapsed_seconds.count() > (5 * k_const) && this->duration_t >= 55){ // dodaj częśćiowe rozwiązania na listę
+            if(elapsed_seconds.count() > (period * k_const) && this->duration_t >= period * 15){ // dodaj częśćiowe rozwiązania na listę
                 partsolutionvalues.push_back(this->currentValue);
                 k_const ++;
             }
@@ -231,16 +233,19 @@ void SimAnn::showResult(){
         else
             std::cout << this->solution[i] << " - ";
     }
+    std::cout << " - 0" << std::endl;
     std::cout << std::endl;
 
     std::cout << "Value: "; // wynikowa droga
     std::cout << this->currentValue;
     std::cout << std::endl << std::endl;
 
-    if(this->duration_t >= 55){ // wypisanie częściowych rozwiązań (czas domyślny- 60s)
+    double period = this->duration_t/16;
+
+    if(this->duration_t >= period * 15){ // wypisanie częściowych rozwiązań
         std::cout << "Solutions after period of time: " << std::endl;
-        for(int i = 1; i <= 9; i++){
-            std::cout << "Time [" << i*5 << "s]: " << partsolutionvalues[i - 1] << std::endl;
+        for(int i = 1; i <= 15; i++){
+            std::cout << "Time [" << i*period << "s]: " << partsolutionvalues[i - 1] << std::endl;
         }
     }
 }
