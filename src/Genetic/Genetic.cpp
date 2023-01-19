@@ -17,63 +17,54 @@ int Genetic::paramaterSet = 0;
 Genetic::Genetic(){
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda inicjuje populacje poczatkowa
+//--------------------------------------------------------------------------------------------------------------------------
 void Genetic::populationInit(Matrix& matrix){
     std::vector<int> randomPath;
 
+    // inicjalizacja wektora losowej drogi
     for(int i = 0; i < matrix.size(); i++)
         randomPath.push_back(i);
 
     for (int i = 0; i < this->populationSize; i++)
 		{
+            // tworzymy losowa sekwencje wierzcholkow
 			std::random_shuffle(randomPath.begin(), randomPath.end());
 			Chromosome chromosome;
 
             for(int i = 0; i < randomPath.size(); i++)
-                chromosome.path.push_back(randomPath[i]);
+                chromosome.path.push_back(randomPath[i]); // dodajemy sekwencje do osobnika
 
-            chromosome.pathLength = calculateCurrentValue(matrix, randomPath);
-			population.push_back(chromosome);
+            chromosome.pathLength = calculateCurrentValue(matrix, randomPath); // dodajemy dlugosc drogi do osobnika
+			population.push_back(chromosome); // dodajemy osobnika do populacji
 		}
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda realizuje selekcję metodą ruletki
+//--------------------------------------------------------------------------------------------------------------------------
 void Genetic::rouletteSelection(){
 
     if(!populationGeneric.empty())
         populationGeneric.clear();
 
-    // double totalFitness = 0;
-
-    // // obliczamy sume funkcji przystosowania wszystkich osobnikow
-    // for (auto& ind : population)
-    //     totalFitness += ind.fitness;
-
-    // double randomNumber = ((double)rand() * totalFitness) / (double)RAND_MAX;
-    // totalFitness = 0;
-    // for (int i = 0; i < population.size(); i++)
-    // {
-    //     totalFitness += population[i].fitness;
-    //     if (totalFitness >= randomNumber){
-    //         populationGeneric.push_back(population[i];)
-    //     }
-    // }
-
     double total_fitness = 0; // suma jakosci wszystkich rozwiazan
     int population_size = population.size();
 
-    double fitness[population.size()];
+    double fitness[population.size()]; // tablica fitness dla wszystkich osobnikow
     int i = 0;
 
-    // Sumowanie długości trasy całej populacji
     for (Chromosome ind : population){
-        fitness[i] = 1.0/(double)ind.pathLength; // ocena
-        total_fitness += fitness[i];
+        fitness[i] = 1.0/(double)ind.pathLength; // Dostosowanie
+        total_fitness += fitness[i]; // Sumowanie długości trasy całej populacji
         i++;
     }
 
     for(int j = 0; j < (population.size())*0.3; j++){
         double f = (double)rand() / RAND_MAX;
-        double random_value = f * (total_fitness);
-        double fitness_sum = 0;
+        double random_value = f * (total_fitness); // wybieramy losowy punkt z zakresu (0, total_fitness)
+        double fitness_sum = 0; 
         i = 0;
         for (Chromosome ind : population) {
             fitness_sum += fitness[i];
@@ -86,37 +77,30 @@ void Genetic::rouletteSelection(){
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda realizuje krzyżowanie metodą Davis's ordered crossover
+//--------------------------------------------------------------------------------------------------------------------------
 void Genetic::davisCrossover(Matrix& matrix){
 
     int counter = 0;
 
+    // Krzyzujemy ze soba dwa sasiednie osobiki
+
     while (counter < (populationGeneric.size() - 1)){
-        // std::cout << "counter: " << counter << std::endl;
 
-        double randomValue = ((double)rand() / (RAND_MAX));
-
-        // std::cout << "Sciezka wejsciowa (rodzic 1): ";
-        // for(int vertex: populationGeneric[counter].path){
-        //     std::cout << vertex << " ";
-        // }
-        // std::cout <<std::endl<<std::endl;
-        // std::cout << "Sciezka wejsciowa (rodzic 2): ";
-        // for(int vertex: populationGeneric[counter + 1].path){
-        //     std::cout << vertex << " ";
-        // }
-        // std::cout <<std::endl<<std::endl;
+        double randomValue = ((double)rand() / (RAND_MAX)); // losowa liczba w zakresie (0,1)
 
         Chromosome child1, child2;
 
-        if (randomValue < crossProbability)
+        if (randomValue < crossProbability) // z okreslonym prawdopodobienstwem dojdzie do krzyzowania
         {
-            int cross_point1;
+            int cross_point1; // punkty krzyzowania
             int cross_point2;
             do{
-                cross_point1 = rand() % (matrix.size() - 1);
+                cross_point1 = rand() % (matrix.size() - 1); // losujemy punkt krzyzowania
             }while (cross_point1 == 0);
             do{
-                cross_point2 = rand() % (matrix.size() - 1);
+                cross_point2 = rand() % (matrix.size() - 1); // losujemy punkt krzyzowania
             }while ((cross_point1 == cross_point2) || (cross_point2 == 0));
 
             //upewnienie się, że pierwszy punkt jest mniejszy niż drugi
@@ -124,18 +108,16 @@ void Genetic::davisCrossover(Matrix& matrix){
                 std::swap(cross_point1, cross_point2);
             }
 
-            // std::cout << "cross1: " << cross_point1 << std::endl;
-            // std::cout << "cross2: " << cross_point2 << std::endl;
-
             Chromosome child1, child2;
             std::unordered_set<int> child1_set;
             std::unordered_set<int> child2_set;
 
-            for(int i = 0; i < matrix.size(); i++){
+            for(int i = 0; i < matrix.size(); i++){ // inicjalizacja sciezek dla potomkow
                 child1.path.push_back(i);
                 child2.path.push_back(i);
             }
 
+            // kopiowanie fragmentów rodziców pomiędzy punktami do ich potomków
             for (int i = cross_point1; i <= cross_point2; i++) {
                 child1.path[i] = populationGeneric[counter].path[i];
                 child1_set.insert(populationGeneric[counter].path[i]);
@@ -150,18 +132,22 @@ void Genetic::davisCrossover(Matrix& matrix){
             if(current_index2 == matrix.size())
                 current_index2 = 0;
 
+            // wypełniamy resztę pustych pól w potomkach
             for (int i = current_index1; i != cross_point1; i++) {
 
                 if(i == matrix.size())
                     i = 0;
 
+                // sprawdzamy czy wierzcholek na ktory jest ustawiony wskaznik w rodzicu wystapil juz w dziecku
                 while (child1_set.count(populationGeneric[counter + 1].path[current_index1]) != 0) {
                     current_index1++;
-                    if(current_index1 == matrix.size())
+
+                    // jesli wypelnilismy elementy na prawo od drugiego punktu krzyzowania
+                    // to wypelnij puste pola na lewo od pierwszego punktu krzyzowania
+                    if(current_index1 == matrix.size()) 
                         current_index1 = 0;
-                    //std::cout << "petla" << std::endl;
                 }
-                child1.path[i] = populationGeneric[counter + 1].path[current_index1];
+                child1.path[i] = populationGeneric[counter + 1].path[current_index1]; // wpisujemy wierzcholek do potomka na okreslonej wczesniej w petli pozycji
                 child1_set.insert(populationGeneric[counter + 1].path[current_index1]);
                 if(current_index1 == (matrix.size())-1)
                         current_index1 = 0;
@@ -169,6 +155,7 @@ void Genetic::davisCrossover(Matrix& matrix){
                     current_index1++;
             }
 
+            // proces powyzej powtarzamy dla drugiego potomka
             for (int i = current_index2; i != cross_point1; i++) {
 
                 if(i == matrix.size())
@@ -178,7 +165,6 @@ void Genetic::davisCrossover(Matrix& matrix){
                     current_index2++;
                     if(current_index2 == matrix.size())
                         current_index2 = 0;
-                    //std::cout << "petla" << std::endl;
                 }
                 child2.path[i] = populationGeneric[counter].path[current_index2];
                 child2_set.insert(populationGeneric[counter].path[current_index2]);
@@ -188,24 +174,14 @@ void Genetic::davisCrossover(Matrix& matrix){
                     current_index2++;
             }
 
-            child1.pathLength = calculateCurrentValue(matrix, child1.path);
+            child1.pathLength = calculateCurrentValue(matrix, child1.path); // obliczamy sciezke dla potomkow
             child2.pathLength = calculateCurrentValue(matrix, child2.path);
 
-            population.push_back(child1);
+            population.push_back(child1); // dodajemy potomkow do populacji
             population.push_back(child2);
             counter = counter + 2;
-
-            // std::cout << "Sciezka wyjsciowa (dziecko 1): ";
-            // for(int vertex: child1.path){
-            //     std::cout << vertex << " ";
-            // }
-            // std::cout <<std::endl<<std::endl;
-            // std::cout << "Sciezka wyjsciowa (dziecko 2): ";
-            // for(int vertex: child2.path){
-            //     std::cout << vertex << " ";
-            // }
         }
-        else
+        else // jesli nie doszlo do krzyzowania miedzy rodzicami, to wybierz kolejnych
         {
             counter = counter + 2;
         }
@@ -213,25 +189,28 @@ void Genetic::davisCrossover(Matrix& matrix){
     populationGeneric.clear();
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda realizuje mutacje
+//--------------------------------------------------------------------------------------------------------------------------
 void Genetic::mutate(Matrix& matrix){
     for (int i = 0; i < population.size(); i++){
         double randomValue = ((double)rand() / (RAND_MAX));
         if (randomValue < mutationProbability){
             if (mutationType == "transposition"){
-                int index1 = rand() % population[i].path.size();
+                int index1 = rand() % population[i].path.size(); // losujemy indeksy wierzcholkow do zamiany
                 int index2;
                 do{
                     index2 = rand() % population[i].path.size();
                 } while (index2 == index1);
 
-                int temp = population[i].path[index1];
+                int temp = population[i].path[index1]; // zamiana wierzcholkow
                 population[i].path[index1] = population[i].path[index2];
                 population[i].path[index2] = temp;
 
-                population[i].pathLength = calculateCurrentValue(matrix, population[i].path);
+                population[i].pathLength = calculateCurrentValue(matrix, population[i].path); // obliczamy nowa sciezke po mutacji
             }
             else if (mutationType == "inversion"){
-                int index1 = rand() % population[i].path.size();
+                int index1 = rand() % population[i].path.size();  // losujemy indeksy wierzcholkow pomiedzy ktorymi zajdzie inwersja
                 int index2;
                 do
                 {
@@ -243,13 +222,16 @@ void Genetic::mutate(Matrix& matrix){
                     index2 = index1;
                     index1 = tmp;
                 }
-                std::reverse(population[i].path.begin() + index1, population[i].path.begin() + index2 + 1);
-                population[i].pathLength = calculateCurrentValue(matrix, population[i].path);
+                std::reverse(population[i].path.begin() + index1, population[i].path.begin() + index2 + 1); // dokonujemy inwersji metoda reverse()
+                population[i].pathLength = calculateCurrentValue(matrix, population[i].path); // obliczamy nowa sciezke po mutacji
             }
         }
     }
 }
 
+//--------------------------------------------------------------------------------------------------------------------------
+// Metoda tworzy nowe pokolenie, usuwajac najgorszych osobnikow po krzyzowaniu i mutacji
+//--------------------------------------------------------------------------------------------------------------------------
 void Genetic::elite(){
     int index = population.size() - 1;
     while(index > (populationSize - 1)){
@@ -281,69 +263,37 @@ void Genetic::algorithm(Matrix& matrix){
             return a.pathLength < b.pathLength;
         }); // sortujemy
 
-        bestSolution = population[0];
-
-        // std::cout << "Populacja:  " <<std::endl;
-        // int i = 0;
-        // for (Chromosome ind : population) {
-        //     std::cout << "Osobnik " << i << ": " << std::endl;
-        //     std::cout << ind.pathLength << std::endl;
-        //     i++;
-        // }
-        // std::cout << std::endl;
-
-        // i = 0;
-        // std::cout << "Populacja macierzysta:  " <<std::endl;
-        // for (Chromosome ind : populationGeneric) {
-        //     std::cout << "Osobnik " << i << ": " << std::endl;
-        //     std::cout << ind.pathLength << std::endl;
-        //     i++;
-        // }
+        bestSolution = population[0]; // najlepszy osobnik w pierwszym pokoleniu
 
         start_alg = std::chrono::system_clock::now(); // rozpoczynamy mierzenie czasu wykonania algorytmu
         elapsed_seconds = start_alg - start_alg;
 
         while(elapsed_seconds.count() < algDuration){
-            // std::cout << "Populacja: " << population.size() << std::endl;
-            // std::cout << "PopulacjaGeneric: " << populationGeneric.size() << std::endl;
-            rouletteSelection();
-            // if(populationGeneric.size() < 2){
-            //     population.clear();
-            //     populationInit(matrix);
-            //     std::sort(population.begin(), population.end(), [](const Chromosome &a, const Chromosome &b){
-            //         return a.pathLength < b.pathLength;
-            //     }); // sortujemy
-            //     rouletteSelection();
-            // }
-            // std::cout << "PopulacjaGeneric after roulette: " << populationGeneric.size() << std::endl;
-            davisCrossover(matrix);
-            // std::cout << "Populacja po calym cyklu: " << population.size() << std::endl << std::endl;
+            rouletteSelection(); // dokonujemy selekcji
+            davisCrossover(matrix); // dokonujemy krzyzowania
 
             std::sort(population.begin(), population.end(), [](const Chromosome &a, const Chromosome &b){
                 return a.pathLength < b.pathLength;
             }); // sortujemy
 
-            mutate(matrix);
-            elite();
+            mutate(matrix); // dokonujemy mutacji
+            elite(); // tworzymy nowe pokolenie- tej samej wielkosci jaka ustawil uzytkownik
 
-            if (bestSolution.pathLength > population[0].pathLength){
+            if (bestSolution.pathLength > population[0].pathLength){ // jesli w nowym pokoleniu znaleziono lepszego osobnika niz dotychczasowo znaleziony
                 for(int i = 0; i < matrix.size(); i++)
-                    bestSolution.path[i] = population[0].path[i];
+                    bestSolution.path[i] = population[0].path[i]; // nowy najlepszy osobnik
 
                 bestSolution.pathLength = population[0].pathLength;
             }
 
-            // std::cout << "best solution: " << bestSolution.pathLength << std::endl;
-
             end_alg = std::chrono::system_clock::now(); // koniec pomiaru czasu
             elapsed_seconds = end_alg - start_alg; // ilość czasu, która upłyneła od uruchomienia
 
-            if(elapsed_seconds.count() > (period * k_const) && this->algDuration >= period * 15){ // dodaj częśćiowe rozwiązania na listę
+            if(elapsed_seconds.count() > (period * k_const) && this->algDuration >= period * 15){ // dodaj częściowe rozwiązania na listę
                 partsolutionvalues.push_back(this->bestSolution.pathLength);
                 k_const ++;
             }
             generationCounter++;
-            // std::cout << "liczba osobnikow: " << population.size() << std::endl;
         }
     }
 

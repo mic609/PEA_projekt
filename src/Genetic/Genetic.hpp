@@ -14,15 +14,14 @@ class Genetic{
     };
     std::vector<Chromosome> population; // populacja
     std::vector<Chromosome> populationGeneric; // populacja po selekcji metoda ruletki
-    std::vector<Chromosome> populationElite;  // 10% najlepszej populacji z population_generic
-    std::vector<int> partsolutionvalues;
+    std::vector<int> partsolutionvalues; // wyniki po danym okresie czasu
     static double crossProbability; // prawdopodobienstwo krzyzowania
     static double mutationProbability; // prawdopodobienstwo mutacji
     static std::string mutationType; // typ mutacji
     static int populationSize; // wielkosc populacji
     static double algDuration; // kryterium stopu
     Chromosome bestSolution; // najlepszy osobnik
-    int generationCounter;
+    int generationCounter; // liczba pokolen
 
     public:
     static int paramaterSet;
