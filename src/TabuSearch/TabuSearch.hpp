@@ -13,12 +13,14 @@ class TabuSearch{
     std::vector<int> partsolutionvalues; // rozwiazania po danym okresie czasu
     static double duration_t; // czas trwania algorytmu
     static std::string neighbourhoodType; // typ sasiedztwa
-    static int paramaterSet; // parametry ustawione / nieustawione
     static int diversification; // wlaczenie / wylaczenie dywersyfikacji
     std::vector<std::vector<int>> tabulist; // lista tabu przechowujaca wartosc kadencji
     int tabucount; // liczba elementow na liscie tabu
     int best_from; // najlepsze przejscie w sasiedztwie
     int best_to; // najlepsze przejscie w sasiedztwie
+
+    public:
+    static int paramaterSet; // parametry ustawione / nieustawione
 
     public:
     TabuSearch();

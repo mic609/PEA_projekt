@@ -111,8 +111,8 @@ std::vector<int> TabuSearch::neighbourhoodLook(Matrix& matrix){
         std::vector<int> sol = bestvector;
         int valueA = calculateCurrentValue(matrix, bestvector); // dlugosc sciezki dla dotychczasowej sekwencji
 
-        for(int IndexA = i; IndexA < (this->solution.size() - 1); IndexA ++){
-            for(int IndexB = i + 1; IndexB < this->solution.size(); IndexB ++){
+        for(int IndexA = 0; IndexA < (this->solution.size() - 1); IndexA ++){
+            for(int IndexB = IndexA + 1; IndexB < this->solution.size(); IndexB ++){
                 
                 // zamiana elementów
                 int temp;
@@ -146,8 +146,8 @@ std::vector<int> TabuSearch::neighbourhoodLook(Matrix& matrix){
         std::vector<int> sol = bestvector;
         int valueA = calculateCurrentValue(matrix, bestvector); // dlugosc sciezki dla dotychczasowej sekwencji
 
-        for(int IndexA = i; IndexA < (this->solution.size() - 1); IndexA ++){
-            for(int IndexB = i + 1; IndexB < this->solution.size(); IndexB ++){
+        for(int IndexA = 0; IndexA < (this->solution.size() - 1); IndexA ++){
+            for(int IndexB = IndexA + 1; IndexB < this->solution.size(); IndexB ++){
                 
                 int left = IndexA;
                 int right = IndexB;
@@ -242,9 +242,9 @@ void TabuSearch::algorithm(Matrix& matrix){
                 iter = 0;
             }
 
-            if(tabucount <= (matrix.size()/2)){ // ograniczona dlugosc listy tabu
-                tabulist[move[0]][move[1]] = matrix.size() *2; // wartosc kadencji stala
-                tabulist[move[1]][move[0]] = matrix.size() *2; // wartosc kadencji stala
+            if(tabucount <= (matrix.size()*matrix.size()/8)){ // ograniczona dlugosc listy tabu
+                tabulist[move[0]][move[1]] = matrix.size(); // wartosc kadencji stala
+                tabulist[move[1]][move[0]] = matrix.size(); // wartosc kadencji stala
                 tabucount ++;
             }
 

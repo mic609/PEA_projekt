@@ -16,8 +16,10 @@ class SimAnn{
     static std::string neighbourhoodType; // typ sasiedztwa
     static double a_constant; // wspolczynnik w geometrycznym schemacie chlodzenia
     static int k_geometric; // liczba, do ktorej ewentuanie ma byc podniesiony wspolczynnik a
-    static int paramaterSet; // parametry ustawione / nieustawione
     int najk; // najkrotsza znaleziona wartosc drogi po wszystich iteracjach (nie jest rozwiazaniem koncowym!)
+
+    public:
+    static int paramaterSet; // parametry ustawione / nieustawione
 
     public:
     SimAnn(int, double, double);

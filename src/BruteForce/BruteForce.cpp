@@ -1,5 +1,5 @@
-#include <BruteForce.hpp>
-#include <Matrix.hpp>
+#include "BruteForce.hpp"
+#include "Matrix.hpp"
 #include <algorithm>
 
 //--------------------------------------------------------------------------------------------------------------------------

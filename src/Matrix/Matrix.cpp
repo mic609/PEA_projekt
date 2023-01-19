@@ -12,7 +12,7 @@ Matrix::Matrix(int size){
 //--------------------------------------------------------------------------------------------------------------------------
 // Metoda, wczytująca macierz z pliku
 //--------------------------------------------------------------------------------------------------------------------------
-void Matrix::readFromFile(std::string filename){
+int Matrix::readFromFile(std::string filename){
 
     std::fstream file;
 
@@ -20,6 +20,7 @@ void Matrix::readFromFile(std::string filename){
 
     if(file.good() == false){
         std::cout << "The file could not be opened! " << std::endl;
+        return 0;
     }
     else{
         int val;
@@ -39,6 +40,7 @@ void Matrix::readFromFile(std::string filename){
     }
     
     file.close();
+    return 1;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------

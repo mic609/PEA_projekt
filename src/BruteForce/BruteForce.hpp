@@ -1,7 +1,7 @@
 #ifndef BRUTEFORCE_HPP
 #define BRUTEFORCE_HPP
 
-#include <Matrix.hpp>
+#include "Matrix.hpp"
 #include <list>
 
 class BruteForce{
